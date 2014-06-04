@@ -1,10 +1,13 @@
 package com.example.mycontactlist;
 
+import java.util.ArrayList;
+
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
+import android.text.format.Time;
 import android.util.Log;
 
 public class ContactDataSource {
@@ -70,17 +73,14 @@ public class ContactDataSource {
 		return didSucceed;
 	}
 	
-	public boolean updateAddress(Contact c, String s, String ci, String st, String z){
+	public boolean updateAddress(Contact c, ContactAddress cAdd){
 		boolean didSucceed = false;
 		try{
 			Long rowId = Long.valueOf(c.getContactID());
 			ContentValues updateValues = new ContentValues();
 			
-			updateValues.put("streetaddress", s);
-			updateValues.put("city", ci);
-			updateValues.put("state", st);
-			updateValues.put("zipcode", z);
-		
+			updateValues.put("streetaddress", cAdd.getAddress());
+	
 			didSucceed = database.update("contact", updateValues, "_id=" + rowId, null) > 0;
 		}
 		catch (Exception e){
@@ -124,4 +124,67 @@ public class ContactDataSource {
 		}
 		return contactName + ", " + streetAddress;
 	}
+	public ArrayList<String> getContactName(){
+		ArrayList<String> contactNames = new ArrayList<String>();
+		try{
+			String query = "Select contactname from contact";
+			Cursor cursor = database.rawQuery(query, null);
+			
+			cursor.moveToFirst();
+			while(!cursor.isAfterLast()){
+				contactNames.add(cursor.getString(0));
+				cursor.moveToNext();
+			}
+			cursor.close();
+		}
+		catch(Exception e){
+			contactNames = new ArrayList<String>();
+		}
+		return contactNames;
+	}
+	
+	public ArrayList<Contact>getContacts(){
+		ArrayList<Contact>contacts = new ArrayList<Contact>();
+		try{
+			String query = "SELECT * FROM contact";
+			Cursor cursor = database.rawQuery(query, null);
+			
+			Contact newContact;
+			cursor.moveToFirst();
+			while(!cursor.isAfterLast()){
+				newContact = new Contact();
+				newContact.setContactID(cursor.getInt(0));
+				newContact.setContactName(cursor.getString(1));
+				newContact.setStreetAddress(cursor.getString(2));
+				newContact.setCity(cursor.getString(3));
+				newContact.setState(cursor.getString(4));
+				newContact.setZipCode(cursor.getString(5));
+				newContact.setPhoneNumber(cursor.getString(6));
+				newContact.setCellNumber(cursor.getString(7));
+				newContact.setEMail(cursor.getString(8));
+				Time t = new Time();
+				t.set(Long.valueOf(cursor.getString(9)));
+				newContact.setBirthday(t);
+				
+				contacts.add(newContact);
+				cursor.moveToNext();
+			}
+			cursor.close();
+		}
+		catch(Exception e){
+			contacts = new ArrayList<Contact>();
+		}
+		return contacts;
+	}
+	public boolean deleteContact(int contactId){
+		boolean didDelete = false;
+		try{
+			didDelete = database.delete("contact", "_id" + contactId, null) > 0;
+		}
+		catch(Exception e){
+			//do nothing = return value already false
+		}
+		return didDelete;
+	}
+	
 }

@@ -5,4 +5,7 @@
     <color name="dataEntry_background">#edd8ed</color>
 	<color name="settings_background_1">#f26835</color>
 	<color name="settings_background_2">#d2b48c</color>
+	<color name="system_red">#ff0000</color>
+	<color name="system_white">#ffffff</color>
+	<color name="system_blue">#0000ff</color>
 </resources>

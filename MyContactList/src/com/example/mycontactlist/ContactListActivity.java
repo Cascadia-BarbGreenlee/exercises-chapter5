@@ -1,15 +1,26 @@
 package com.example.mycontactlist;
 
+import java.util.ArrayList;
+
 import android.app.Activity;
+import android.app.ListActivity;
 import android.content.Intent;
 import android.os.Bundle;
+
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.ImageButton;
+import android.widget.ListView;
 
-public class ContactListActivity extends Activity {
+public class ContactListActivity extends ListActivity {
 
+	boolean isDeleting = false;
+	ContactAdapter adapter;
+	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -17,7 +28,56 @@ public class ContactListActivity extends Activity {
 		initListButton();
         initMapButton();
         initSettingsButton();
+        initDeleteButton();
+             
+        ContactDataSource ds = new ContactDataSource(this);
+        ds.open();
+        final ArrayList<Contact>contacts = ds.getContacts();
+        ds.close();
+        
+        adapter = new ContactAdapter(this, contacts);
+        setListAdapter(adapter);
+	
+        ListView listView = getListView();
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+        	@Override
+        	public void onItemClick(AdapterView<?> parent,View itemClicked, int position, long id){
+        		Contact selectedContact = contacts.get(position);
+        		Intent intent = new Intent(ContactListActivity.this,ContactActivity.class);
+        		intent.putExtra("contactid", selectedContact.getContactID());
+        		startActivity(intent);
+        	}
+		});
 	}
+	
+	private void initDeleteButton(){
+		final Button deleteButton = (Button)findViewById(R.id.ButtonDelete);
+		deleteButton.setOnClickListener(new View.OnClickListener(){
+			public void onClick(View v){
+				if(isDeleting){
+					deleteButton.setText("Delete");
+					isDeleting = false;
+				}
+				else{
+					deleteButton.setText("Done Deleting");
+					isDeleting = true;
+				}
+			}
+		});
+	}
+	
+//	@Override
+//	public void onItemClick(AdapterView<?> parent, View itemClicked, int position, long id){
+//		Contact selectedContact = contacts.get(position);
+//		if(isDeleting){
+//			adapter.showDelete(position, itemClicked, ContactListActivity.this, selectedContact);
+//		}
+//		else{
+//			Intent intent = new Intent(ContactListActivity.this, ContactActivity.class);
+//			intent.putExtra("contactid",selectedContact.getContactID());
+//			startActivity(intent);
+//		}
+//	}
 
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
